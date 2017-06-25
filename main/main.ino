@@ -33,15 +33,15 @@ void readInput() {
   if (Serial.available() > 0) {
     int incomingByte = Serial.read();
 
-    int action = (incomingByte & (1l << 6)) != 0;
-    int argument = (incomingByte & (1l << 5)) != 0;
+    int action = (incomingByte & (1l << 7)) != 0;
+    int argument = ((incomingByte >> 5) & 3);
     int p = incomingByte & ((1l << 5) - 1);
 
     if (action == ACTION_SETMODE) {
-      if (argument) {
+      if (argument == 1) {
         setWrite(p);
       } else {
-        setRead(p);
+        setRead(p, argument);
       }
       pinData = 1 << 15;
     } else if (action == ACTION_WRITE) {
@@ -50,9 +50,9 @@ void readInput() {
   }
 }
 
-void setRead(int pin) {
+void setRead(int pin, int mode) {
   if (chk[pin]) return;
-  pinMode(pin, INPUT);
+  pinMode(pin, mode ? INPUT_PULLUP : INPUT);
   chk[pin] = 1;
   readPins[readCount++] = pin;
 }
